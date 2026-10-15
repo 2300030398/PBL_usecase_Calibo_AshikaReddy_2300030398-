@@ -1,141 +1,168 @@
-# Retail Category Intelligence
+# Power BI Sales Intelligence
 
-Retail Product Performance: Exploratory Data Analysis
+Sales Performance, Profitability and Business Intelligence Dashboard
 
-A team project from Calibo AI Academy (MUC01, Group 14, January to June 2026). It turns six months of retail transaction data into evidence that a Category Manager can use for shelf-space, discount and promotion decisions.
-
-## Team
-
-| Member | Focus area |
-|---|---|
-| G. Akash | ETL and data validation |
-| M.V. Ashika Reddy | Product and discount analysis |
-| A. Manish | Sales timing and trends |
-| Rendla Pavithra | Business insights and final presentation |
+A Business Intelligence case study from Calibo AI Academy. It turns three years of retail sales data, spread across nine disconnected tables, into one interactive Power BI model that drills from company-wide KPIs down to a single order, product or location.
 
 ## Business Problem
 
-**Situation:** A regional 12-store retail chain is preparing for a quarterly supplier review across five categories: Electronics, Apparel, Grocery, Home and Kitchen, and Personal Care. The Category Manager needs evidence for shelf-space and promotional decisions.
+**Situation:** Sales, product, location, customer, salesperson and budget data sit in nine disconnected tables that are refreshed by hand every month.
 
-**Complication:** The manager has to tell growing, stable and declining categories apart, and find the products that drive or drag each category, before suppliers present their cases.
+**Complication:** Managers cannot quickly tell which products, cities or salespeople are driving revenue, or which ones are falling short of budget.
 
-**Business question:** Which categories are growing or declining? Which products drive or drag each category? Are discounts associated with higher revenue per transaction? When should promotions be timed?
+**Key question:** Where are we generating the most revenue and profit, and where should management focus attention next?
 
-**Success definition:** A defensible category priority, a product and supplier challenge backed by revenue, a discount finding backed by numbers, a promotion timing signal, and a clear statement of limitations.
+**Primary stakeholder:** Business managers who need a self-serve view instead of a monthly Excel rebuild.
 
-## Dataset
+**Success definition:** One interactive Power BI model that drills from company-wide KPIs down to a single order, product or location.
 
-The supplied MUC01 retail sales transaction dataset, covering January to June 2026. It is the single source of data for the whole analysis.
+## Project Snapshot
 
-## Analysis Workflow
+| Metric | Value |
+|---|---|
+| Total revenue | $25.66M |
+| Gross profit | $8.34M |
+| Orders | 10,889 |
+| Gross margin | 32.5% |
+| Units sold | 21,078 |
+| Products | 101 |
+| Locations | 74 |
+| Customers | 801 |
+| Salespeople | 45 |
+
+- **Analysis period:** 01 Jan 2021 to 15 Mar 2023
+- **Source tables (9):** Sales for 2021, 2022 and 2023, Products, Locations, Customers, Sales People, Budgeting and Date Ranges
+
+## Tech Stack
+
+- Power BI
+- DAX
+- Excel (source data)
+
+## Project Workflow
 
 ```
-Business Problem -> ETL and Validation -> Category / Product / Discount / Timing Analysis -> Business Insights
+Data Quality -> Star-Schema Model -> DAX Measures -> Dashboard Design -> Key Findings -> Recommendations
 ```
 
-1. **Extract:** Inspect the structure of the transaction data.
-2. **Transform:** Clean and standardize the data.
-3. **Validate:** Check data quality before any analysis begins.
-4. **Analyze:** Study categories, products, discounts and timing.
-5. **Interpret:** Combine the findings into a business recommendation.
+### 1. Data Preparation
 
-## My Contribution: Product and Discount Analysis
+1. **Import:** Loaded all 9 sheets (3 yearly sales tables, Products, Locations, Customers, Sales People, Budgeting, Date Ranges).
+2. **Clean:** Fixed data types, removed blanks, standardized column names and checked for duplicate Order IDs.
+3. **Append:** Combined the 2021 to 2023 sales (10,889 rows) into one consistent `Fact_Sales` table.
+4. **Model-ready:** Added calculated Revenue and Cost columns for the star-schema model.
 
-My part of the project moves from category totals to the products driving revenue, and then looks at how discount levels relate to revenue per transaction.
+### 2. Data Quality Findings
 
-### Product Contribution Across Categories
-
-Revenue by selected products over six months (in millions of rupees):
-
-| Category | Product | Revenue (INR M) |
-|---|---|---|
-| Electronics | Headphones | 47.70 |
-| Electronics | Laptop | 46.55 |
-| Electronics | Smart TV | 41.88 |
-| Apparel | Saree | 14.16 |
-| Apparel | T-Shirt | 14.10 |
-| Apparel | Kurta | 13.61 |
-| Home and Kitchen | Mixer Grinder | 16.90 |
-| Home and Kitchen | Storage Box | 16.68 |
-| Home and Kitchen | Water Bottle | 15.83 |
-| Grocery | Rice | 8.56 |
-| Grocery | Dal | 8.49 |
-| Grocery | Sugar | 8.38 |
-| Personal Care | Shampoo | 8.17 |
-| Personal Care | Body Lotion | 8.11 |
-| Personal Care | Sunscreen | 7.59 |
-
-Key observations:
-
-- **Electronics leads:** Headphones are the top product at INR 47.70M, followed closely by Laptop at INR 46.55M.
-- **Apparel is close:** Saree (INR 14.16M) and T-Shirt (INR 14.10M) perform almost the same, so growth does not depend on one hero product.
-- **Gaps vary by category:** Product-level differences appear in every category, so products within a category do not perform equally.
-
-### Discount Pattern
-
-Average revenue per transaction at each discount level:
-
-| Discount | Average revenue per transaction |
+| Check | Result |
 |---|---|
-| 0% | INR 4,686 |
-| 5% | INR 4,304 |
-| 10% | INR 4,006 |
-| 15% | INR 4,069 |
-| 20% | INR 3,632 |
+| Duplicate orders | None. All 10,889 Order IDs are unique, so the tables were safe to append directly. |
+| Missing values | None. Sales, Products, Locations and Customers passed null checks column by column. |
+| Budgeting key mismatch | 23 of 97 Location IDs in Budgeting do not match `Dim_Location`. Flagged for reconciliation. |
+| Partial year | 2023 sales run only from 1 Jan to 15 Mar, so 2023 is labelled and not compared like-for-like. |
 
-- Average revenue per transaction fell by about 22.5% from the 0% to the 20% discount level.
-- Average units sold stayed almost the same (2.59 at 0%, 2.58 at 20%).
-- No transactions had a discount of 25% or more.
-- This is an observed relationship, not proof that discounts caused the difference.
+### 3. Data Model: Star Schema
 
-## Team Findings
+One fact table, four dimensions and a marked date table, with a single direction of filter flow. There is no snowflaking and there are no many-to-many relationships.
 
-### Category Performance
-
-| Category | Signal |
+| Table | Key columns |
 |---|---|
-| Apparel | Revenue up 34.10% from January to June |
-| Electronics | 49.27% of total revenue, but revenue down 35.02% from January to June |
+| `Fact_Sales` | Order ID, Product ID, Location ID, Salesperson ID, Customer ID, Order Date, Quantity, Price |
+| `Dim_Product` | Product ID, Name, Cost, Price |
+| `Dim_Location` | Location ID, City, State, Population |
+| `Dim_Customer` | Customer ID, Customer Name |
+| `Dim_Salesperson` | Salesperson ID, Name |
+| `Dim_Date` (marked date table) | Year, Quarter, Month, Week, Day |
 
-Category share and category movement answer different questions: scale versus direction. Electronics has scale but is declining, while Apparel shows strong growth.
+### 4. DAX Measures
 
-### Product Leaders and Laggards (six-month revenue)
+Every KPI on the dashboard is a measure, not a hard-typed number.
 
-| Category | Strongest product | Weakest product |
-|---|---|---|
-| Electronics | Headphones, INR 47.70M | Smart TV, INR 41.88M |
-| Apparel | Saree, INR 14.16M | Kurta, INR 13.61M |
-| Grocery | Rice, INR 8.56M | Sugar, INR 8.38M |
-| Home and Kitchen | Mixer Grinder, INR 16.90M | Water Bottle, INR 15.83M |
-| Personal Care | Shampoo, INR 8.17M | Sunscreen, INR 7.59M |
+**Sales and profitability:** Total Sales, Total Orders, Total Quantity Sold, Average Order Value, Total Cost, Gross Profit, Gross Margin %, Revenue per Unit.
 
-Apparel's product spread is tight, so its growth is not tied to one product. Electronics has more value concentrated in a few products, and all five Electronics products move down from January to June, which points to category-level pressure rather than one isolated weak product.
+**Time intelligence and budget:** Current and Previous Year Sales, YoY Sales Growth and YoY Growth %, MTD Sales, YTD Sales and Previous Year YTD, Budget and Actual Sales, Budget Variance, Budget Achievement %.
 
-### Sales Timing
+Sample measures:
 
-- **Strongest weekday:** Saturday (highest average daily revenue).
-- **Weakest weekday:** Tuesday (lowest average daily revenue).
-- **Strongest month:** January.
-- **Weakest month:** June, when Electronics also showed a noticeable decline.
+```dax
+Total Sales =
+SUMX ( Fact_Sales, Fact_Sales[Quantity] * Fact_Sales[Price] )
 
-## Recommendations for the Category Manager
+Gross Profit =
+[Total Sales] -
+SUMX ( Fact_Sales, Fact_Sales[Quantity] * RELATED ( Dim_Product[Cost] ) )
 
-1. Test controlled promotions in Apparel.
-2. Review why Electronics declined, especially Smart TV performance.
-3. Test whether deeper discounts create additional demand before using them more widely.
-4. Use Saturday as a key day for promotion experiments.
+Gross Margin % =
+DIVIDE ( [Gross Profit], [Total Sales], 0 )
 
-## Limitations
+YoY Growth % =
+VAR PY = CALCULATE ( [Total Sales], SAMEPERIODLASTYEAR ( Dim_Date[Date] ) )
+RETURN DIVIDE ( [Total Sales] - PY, PY, 0 )
 
-- The findings are observed patterns that support planning discussions. They do not establish causation.
-- Before making final profitability decisions, the analysis should be extended with product cost, profit margin, inventory, stock-outs and promotion exposure.
+YTD Sales =
+TOTALYTD ( [Total Sales], Dim_Date[Date] )
+
+Budget Achievement % =
+DIVIDE ( [Actual Sales], [Budget], 0 )
+```
+
+### 5. Dashboard Design
+
+| Page | What it shows |
+|---|---|
+| **Executive Overview** | 8 KPI cards (Total Sales, Total Profit, Margin %, Orders, Quantity, AOV, Budget Achievement %, YoY %), sales trend line, sales by year, top 10 products, top 10 customers, top salespeople, actual vs budget |
+| **Product Performance** | Top and bottom 10 products, sales vs profit scatter, margin by product table, product sales trend |
+| **Customer Insights** | Top customers by revenue, orders and AOV by customer, revenue contribution %, high-sales low-margin flags |
+| **Salesperson Performance** | Sales and profit by rep, orders handled, YoY performance by rep, contribution % ranking |
+| **Geographic Analysis** | Filled map of 74 California locations, sales vs population scatter, location ranking matrix |
+| **Budget vs Actual** | Actual vs Budget columns, variance chart, achievement KPI, monthly trend by location |
+
+Interactive features on every page:
+
+- **Slicers:** Year, Month, State, Location, Product, Customer, Salesperson
+- **Drill-down:** Year to Quarter to Month to Day, and State to Location
+- **Drill-through:** Dedicated pages for Product, Customer, Salesperson and Location
+- **Tooltips and cross-filtering:** Report tooltips and synced selection across all visuals
+
+## Key Findings
+
+### Revenue and Profitability
+
+| Year | Revenue |
+|---|---|
+| 2021 | $11.69M |
+| 2022 | $11.57M |
+| 2023 (Jan to Mar only) | $2.40M |
+
+- 2023 covers only about 2.5 months, so it is a partial year and not a decline.
+- Total cost is 67.5% of revenue and gross profit is 32.5%.
+- The overall margin is steady at about 32.5%, but product-level margins range from about 15% (Products 4, 95 and 27) to about 50% (Products 41, 96 and 40). This gives a clear shortlist for a pricing and cost review.
+
+### Customers, Salespeople and Locations
+
+| Area | Finding |
+|---|---|
+| Top city | Rialto, with $465.6K in revenue, leading all 74 California locations |
+| Top salesperson | Kenneth Bradley, with $678.8K in sales, the highest of 45 reps |
+| Top customer | Jesse Hill, with $171.3K, the highest single-customer revenue |
+| Customer concentration | The top 10 customers contribute only about 5.4% of total revenue, so the customer base is broad and low risk |
+| Population and sales | The correlation between location population and revenue is about 0.07, essentially no relationship |
+| Weakest cities | Antioch, Costa Mesa and San Francisco each generate about $280K, roughly 40% below the leaders at about $450K or more |
+
+## Business Recommendations
+
+1. **Reconcile Budgeting location keys:** 23 of 97 Budgeting Location IDs do not match `Dim_Location`. Fix this before using the budget data for accountability reporting.
+2. **Review low-margin products:** Investigate pricing and cost for Products 4, 95 and 27 (about 15 to 18% margin) while protecting Products 41, 96 and 40 (about 50%).
+3. **Invest by performance, not population:** Population barely predicts revenue, so direct marketing and staffing toward proven performers such as Rialto.
+4. **Label 2023 as a partial year:** Make this clear in every YoY view so a 2.5-month slice is not misread as a sales decline.
+5. **Prioritize reps and locations over VIP accounts:** With the top 10 customers at only about 5.4% of revenue, retention effort is better spent on salespeople and cities.
 
 ## Conclusion
 
-Apparel is moving in a positive direction, Electronics needs closer attention, discounts need careful testing, and Saturday is a useful signal for promotion timing. The evidence chain runs from a reliable data foundation, to product and discount detail, to timing context, to a clear business interpretation.
+Clean data leads to a trustworthy model, the model supports measures that never disagree, and the measures feed dashboards that any manager can question directly. Every insight in this project ties back to a DAX measure or a table check.
 
 ## Author
 
 **M.V. Ashika Reddy**
-Calibo AI Academy, Group 14 (MUC01)
+Business Intelligence Case Study, Calibo AI Academy, 2026
 Email: ashikareddymajjiga@gmail.com
